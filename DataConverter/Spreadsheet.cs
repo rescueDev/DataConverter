@@ -1,62 +1,96 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using GemBox.Spreadsheet;
-
-
+using OfficeOpenXml;
 
 namespace DataConverter
 {
     public class Spreadsheet
     {
+        enum Format
+        {
+            xlsx,
+            xls
+        }
 
-        public string path;
+        public string filePath;
         public string format;
 
-        public Spreadsheet(string pathFile, string format)
+        public FileInfo existingFile;
+
+    
+        //constructor
+        public Spreadsheet(string pathFile, string inputformat)
         {
-            path = pathFile;
-
-            // If using Professional version, put your serial key below.
-            SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-
-        }
-
-
-        public ExcelFile LoadExcelFile()
-        {
-            return ExcelFile.Load(path);
-        }
-
-        public void Results()
-        {
-
-            // Iterate through all worksheets in a workbook.
-            foreach (ExcelWorksheet worksheet in LoadExcelFile().Worksheets)
+            try
             {
-                // Display sheet's name.
-                Console.WriteLine("{1} {0} {1}\n", worksheet.Name, new string('#', 30));
+                filePath = pathFile;
+                format = inputformat;
 
-                // Iterate through all rows in a worksheet.
-                foreach (ExcelRow row in worksheet.Rows)
-                {
-                    // Iterate through all allocated cells in a row.
-                    foreach (ExcelCell cell in row.AllocatedCells)
-                    {
-                        // Read cell's data.
-                        string value = cell.Value?.ToString() ?? "EMPTY";
+                CheckInputFormat();
 
-                        // Display cell's value and type.
-                        value = value.Length > 15 ? value.Remove(15) + "…" : value;
-                        Console.Write($"{value} [{cell.ValueType}]".PadRight(30));
-                    }
-
-                    Console.WriteLine();
-                }
-
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                existingFile = new FileInfo(filePath);
 
             }
+            catch (Exception ex)
+            {
+                throw ex;
+
+            }
+
         }
+
+        //check format if valid
+        public void CheckInputFormat()
+        {
+
+            if(!Enum.IsDefined(typeof(Format), format))
+            {
+                throw new Exception("Formato non gestito");
+            }          
+
+        }
+
+
+        //read data and output in List<string[]>
+        public List<string[]> ReadData()
+        {
+
+            using (ExcelPackage package = new ExcelPackage(existingFile))
+            {
+                //Get the first worksheet in the workbook
+                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                int colCount = worksheet.Dimension.End.Column;  //get Column Count
+                int rowCount = worksheet.Dimension.End.Row;     //get row count
+                List<string[]> listRow = new List<string[]>();
+                List<string> header = new List<string>();
+                
+                for (int row = 1; row <= rowCount; row++)
+                {
+                    
+                    //row array of strings
+                    string[] rowString= new string[colCount];
+
+
+                    for(int col = 1; col<= colCount; col++)
+                    {                       
+                        //cell value
+                        rowString[col-1] = worksheet.Cells[row, col].Value.ToString().Trim();
+                        //Console.WriteLine(" Row:" + row + " column:" + col + " Value:" +    worksheet.Cells[row, col].Value.ToString().Trim());
+                    }
+
+                    //add row to list
+                    listRow.Add(rowString);
+                }
+
+            return listRow;
+            } // the using statement automatically calls Dispose() which closes the package.
+        }
+
+
+
+
+        
     }
 }
