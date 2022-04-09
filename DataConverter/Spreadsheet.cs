@@ -44,12 +44,8 @@ namespace DataConverter
         //check format if valid
         public void CheckInputFormat()
         {
-
             if(!Enum.IsDefined(typeof(Format), format))
-            {
-                throw new Exception("Formato non gestito");
-            }          
-
+               throw new Exception("Formato non gestito");  
         }
 
 
@@ -68,7 +64,7 @@ namespace DataConverter
                 
                 for (int row = 1; row <= rowCount; row++)
                 {
-                    
+                
                     //row array of strings
                     string[] rowString= new string[colCount];
 
@@ -88,7 +84,36 @@ namespace DataConverter
             } // the using statement automatically calls Dispose() which closes the package.
         }
 
+        public static string GenerateMap(List<string[]> list)
+        {
+            //starting from one row, analyze it and then compose a json datatype map
+            string map = "";
 
+            //take first row
+            string[] firstRow = list[1];
+
+            Dictionary<string, string> dict= new Dictionary<string, string>();
+            List<Dictionary<string, string>> listDict = new List<Dictionary<string, string>>();
+
+            //foreach cell value try to parse to int or float
+            for (int i = 0; i < firstRow.Length; i++)
+            {
+                string datatype;
+                //float
+                if (Double.TryParse(firstRow[i], out double result) || Int32.TryParse(firstRow[i],out int integer))
+                    datatype = "number";
+                //int
+                else
+                    //Int32.TryParse(firstRow[i], out int result);
+                    datatype = "string";
+
+                dict.Add("Type",datatype);
+
+            }
+
+            return map;
+             
+        }
 
 
         
