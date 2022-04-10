@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Text.Json;
 using System.Collections.Generic;
 using System.IO;
 using OfficeOpenXml;
+using Json.More;
 
 namespace DataConverter
 {
@@ -18,6 +20,7 @@ namespace DataConverter
 
         public FileInfo existingFile;
 
+        public List<string[]> _row;
     
         //constructor
         public Spreadsheet(string pathFile, string inputformat)
@@ -50,7 +53,7 @@ namespace DataConverter
 
 
         //read data and output in List<string[]>
-        public List<string[]> ReadData()
+        public void ReadData()
         {
 
             using (ExcelPackage package = new ExcelPackage(existingFile))
@@ -59,8 +62,8 @@ namespace DataConverter
                 ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
                 int colCount = worksheet.Dimension.End.Column;  //get Column Count
                 int rowCount = worksheet.Dimension.End.Row;     //get row count
-                List<string[]> listRow = new List<string[]>();
-                List<string> header = new List<string>();
+
+                _row = new List<string[]>();
                 
                 for (int row = 1; row <= rowCount; row++)
                 {
@@ -77,11 +80,41 @@ namespace DataConverter
                     }
 
                     //add row to list
-                    listRow.Add(rowString);
+                    _row.Add(rowString);
                 }
 
-            return listRow;
-            } // the using statement automatically calls Dispose() which closes the package.
+            }
+        }
+
+        public string ConvertToJson()
+        {
+         
+            //list of dictionary [{}]
+            List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
+            for (int row = 0; row < _row.Count; row++)
+            {
+                //from second row (first row is header)
+                if (row == 0)
+                {
+                    continue;
+                }
+
+                Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
+
+
+                for (int col = 0; col < _row[row].Length; col++)
+                {
+                    //check and parse datatype
+
+                    dict.Add(_row[0][col], _row[row][col].AsJsonElement());
+                }
+
+                listDict.Add(dict);
+            }
+
+            var json = JsonSerializer.Serialize(listDict);
+
+            return json;
         }
 
         public static string GenerateMap(List<string[]> list)
