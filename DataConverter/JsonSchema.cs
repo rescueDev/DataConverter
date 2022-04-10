@@ -1,6 +1,4 @@
 ﻿using System.Text.Json;
-using Json.Patch;
-using Json.More;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +10,11 @@ namespace DataConverter
 
         private readonly JsonElement _raw;
 
-        public Dictionary<string, JsonSchema>? Object { get; }
-        public List<JsonSchema>? Array { get; }
+        public Dictionary<string, JsonSchema> Object { get; }
+        public List<JsonSchema> Array { get; }
+        public string json;
 
-        //constructor JsonS
+        //constructor JsonSchema
         public JsonSchema(JsonElement raw)
         {
 
@@ -42,14 +41,17 @@ namespace DataConverter
                     throw new ArgumentOutOfRangeException();
             }
         }
-      
-    
+
+        //jsonschema constructor from string
+        public static JsonSchema Build(JsonElement element) => new JsonSchema(element);
+
 
         //build json element from string json
-        public static JsonElement Build(string json)
+        public static JsonSchema Build(string json)
         {
             JsonDocument doc = JsonDocument.Parse(json);
-            return doc.RootElement.Clone();
+            
+            return new JsonSchema(doc.RootElement.Clone()); 
         }
 
 
@@ -59,7 +61,6 @@ namespace DataConverter
             using var doc = JsonDocument.Parse(ToString());
             return doc.RootElement.Clone();
         }
-
 
         //output to string 
         public override string ToString()
@@ -85,15 +86,6 @@ namespace DataConverter
         public static JsonElement ToJsonElement(JsonDocument document)
         {
             return JsonSerializer.Deserialize<JsonElement>(document);
-        }
-
-        //generate patch operation
-        public string GeneratePatchOperation()
-        {
-            string patch = "";
-
-            return patch;
-
         }
 
     }
