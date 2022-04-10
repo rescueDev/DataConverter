@@ -20,7 +20,7 @@ namespace DataConverter
 
         public FileInfo existingFile;
 
-        public List<string[]> _row;
+        public List<string[]> rowsList;
     
         //constructor
         public Spreadsheet(string pathFile, string inputformat)
@@ -63,7 +63,7 @@ namespace DataConverter
                 int colCount = worksheet.Dimension.End.Column;  //get Column Count
                 int rowCount = worksheet.Dimension.End.Row;     //get row count
 
-                _row = new List<string[]>();
+                rowsList = new List<string[]>();
                 
                 for (int row = 1; row <= rowCount; row++)
                 {
@@ -80,7 +80,7 @@ namespace DataConverter
                     }
 
                     //add row to list
-                    _row.Add(rowString);
+                    rowsList.Add(rowString);
                 }
 
             }
@@ -91,7 +91,7 @@ namespace DataConverter
          
             //list of dictionary [{}]
             List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
-            for (int row = 0; row < _row.Count; row++)
+            for (int row = 0; row < rowsList.Count; row++)
             {
                 //from second row (first row is header)
                 if (row == 0)
@@ -102,11 +102,11 @@ namespace DataConverter
                 Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
 
 
-                for (int col = 0; col < _row[row].Length; col++)
+                for (int col = 0; col < rowsList[row].Length; col++)
                 {
                     //check and parse datatype
 
-                    dict.Add(_row[0][col], _row[row][col].AsJsonElement());
+                    dict.Add(rowsList[0][col], rowsList[row][col].AsJsonElement());
                 }
 
                 listDict.Add(dict);
