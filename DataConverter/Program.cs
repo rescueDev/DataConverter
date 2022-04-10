@@ -15,7 +15,9 @@ namespace DataConverter
 
 
             var spreadsheet = new Spreadsheet("/Users/salvatoreborgia/Downloads/test.xlsx", "xlsx");
+
             spreadsheet.ReadData();
+
             string json = spreadsheet.ConvertToJson();
 
             //JsonPointer pointer = JsonPointer.Parse("/1/Nome");
@@ -24,6 +26,7 @@ namespace DataConverter
             //JsonDocument result = patch.Apply(JsonDocument.Parse(json));
             //JsonElement jsonfinale = JsonSchema.ToJsonElement(result);
             Console.WriteLine(json);
+
 
         }
 
