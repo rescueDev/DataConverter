@@ -15,11 +15,18 @@ namespace DataConverter
             xls
         }
 
+        enum Datatypes
+        {
+            Int,
+            Double,
+            Decimal,
+            String,
+            Float
+        }
+
         public string filePath;
         public string format;
-
         public FileInfo existingFile;
-
         public List<string[]> rowsList;
     
         //constructor
@@ -86,9 +93,57 @@ namespace DataConverter
             }
         }
 
+        //public string ConvertToJson()
+        //{
+
+        //    //generate map
+        //    List<Dictionary<string, JsonValueKind>> mapDict = GenerateMap(rowsList);
+
+        //    //list of dictionary [{}]
+        //    List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
+        //    for (int row = 0; row < rowsList.Count; row++)
+        //    {
+        //        //from second row (first row is header)
+        //        if (row == 0)
+        //        {
+        //            continue;
+        //        }
+
+        //        Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
+
+        //        for (int col = 0; col < rowsList[row].Length; col++)
+        //        {
+        //            //dynamic type cell value, don't know if string or int yet
+        //            //dynamic cell = rowsList[row][col];
+
+        //            switch (mapDict[col]["Type"])
+        //            {
+        //                case JsonValueKind.Number:
+        //                    dict.Add(rowsList[0][col], GetInt(rowsList[row][col]).AsJsonElement());
+        //                    break;
+
+        //                default:
+        //                    //add to dict
+        //                    dict.Add(rowsList[0][col], rowsList[row][col].AsJsonElement());
+        //                    break;
+        //            }
+
+        //        }
+
+        //        listDict.Add(dict);
+        //    }
+
+        //    var json = JsonSerializer.Serialize(listDict);
+
+        //    return json;
+        //}
+
         public string ConvertToJson()
         {
-         
+
+            //generate map
+            List<Dictionary<string, Datatypes>> mapDict = GenerateMap(rowsList);
+
             //list of dictionary [{}]
             List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
             for (int row = 0; row < rowsList.Count; row++)
@@ -101,12 +156,11 @@ namespace DataConverter
 
                 Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
 
-
                 for (int col = 0; col < rowsList[row].Length; col++)
                 {
-                    //check and parse datatype
-
-                    dict.Add(rowsList[0][col], rowsList[row][col].AsJsonElement());
+                    //dynamic type cell value, don't know if string or int yet
+                    JsonElement value = ConvertNumber(rowsList[row][col], mapDict[col]["Type"]);
+                    dict.Add(rowsList[0][col], value);
                 }
 
                 listDict.Add(dict);
@@ -117,38 +171,91 @@ namespace DataConverter
             return json;
         }
 
-        public static string GenerateMap(List<string[]> list)
+        private static JsonElement ConvertNumber(string value, Datatypes type)
+        {
+            JsonElement result = 1.AsJsonElement();
+
+            switch (type)
+            {
+                case Datatypes.Int:
+                     result = Convert.ToInt32(value).AsJsonElement();
+                    break;
+                case Datatypes.Double:
+                    result = Convert.ToDouble(value).AsJsonElement();
+                    break;
+                case Datatypes.Float:
+                    result = Convert.ToDecimal(value).AsJsonElement();
+                    break;
+                case Datatypes.String:
+                    result = value.AsJsonElement();
+                    break;
+            }   
+            return result;
+        }
+
+
+        //Generate conversion map
+        //private static List<Dictionary<string, JsonValueKind>> GenerateMap(List<string[]> list)
+        //{
+        //    //starting from one row, analyze it and then compose a json datatype map
+
+        //    //take first row
+        //    string[] firstRow = list[1];
+
+        //    List<Dictionary<string, JsonValueKind>> mapDict = new List<Dictionary<string, JsonValueKind>>();
+
+        //    //foreach cell value try to parse to int or float
+        //    for (int i = 0; i < firstRow.Length; i++)
+        //    {
+        //        Dictionary<string, JsonValueKind> dict= new Dictionary<string, JsonValueKind>();
+        //        JsonValueKind datatype;
+        //        //float
+        //        if (Double.TryParse(firstRow[i], out double result) || Int32.TryParse(firstRow[i],out int integer))
+        //            datatype = JsonValueKind.Number;
+        //            //int
+        //        else
+        //            //Int32.TryParse(firstRow[i], out int result);
+        //            datatype = JsonValueKind.String;
+
+        //        dict.Add("Type",datatype);
+
+        //        mapDict.Add(dict);
+        //    }
+        //    return mapDict;
+        //}
+
+        //Generate conversion map
+        private static List<Dictionary<string, Datatypes>> GenerateMap(List<string[]> list)
         {
             //starting from one row, analyze it and then compose a json datatype map
-            string map = "";
 
             //take first row
             string[] firstRow = list[1];
 
-            Dictionary<string, string> dict= new Dictionary<string, string>();
-            List<Dictionary<string, string>> listDict = new List<Dictionary<string, string>>();
+            List<Dictionary<string, Datatypes>> mapDict = new List<Dictionary<string, Datatypes>>();
 
             //foreach cell value try to parse to int or float
             for (int i = 0; i < firstRow.Length; i++)
             {
-                string datatype;
+                Dictionary<string, Datatypes> dict = new Dictionary<string, Datatypes>();
+                Datatypes datatype;
                 //float
-                if (Double.TryParse(firstRow[i], out double result) || Int32.TryParse(firstRow[i],out int integer))
-                    datatype = "number";
-                //int
+
+                if (Int32.TryParse(firstRow[i], out int integer))
+                    datatype = Datatypes.Int;
+                else if(Double.TryParse(firstRow[i], out double result))
+                    datatype = Datatypes.Double;
+                else if (float.TryParse(firstRow[i], out float floatNumber))
+                    datatype = Datatypes.Float;
                 else
-                    //Int32.TryParse(firstRow[i], out int result);
-                    datatype = "string";
+                    datatype = Datatypes.String;
 
-                dict.Add("Type",datatype);
+                dict.Add("Type", datatype);
 
+                mapDict.Add(dict);
             }
-
-            return map;
-             
+            return mapDict;
         }
 
-
-        
     }
 }
