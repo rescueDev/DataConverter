@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 
 namespace DataConverter
 {
@@ -50,8 +51,8 @@ namespace DataConverter
         public static JsonSchema Build(string json)
         {
             JsonDocument doc = JsonDocument.Parse(json);
-            
-            return new JsonSchema(doc.RootElement.Clone()); 
+
+            return new JsonSchema(doc.RootElement.Clone());
         }
 
 
@@ -83,12 +84,50 @@ namespace DataConverter
         }
 
         //shortcut to json element deserialization
-        public static JsonElement ToJsonElement(JsonDocument document)
+        public JsonElement ToJsonElement()
         {
-            return JsonSerializer.Deserialize<JsonElement>(document);
+            using var doc = JsonDocument.Parse(ToString());
+            return doc.RootElement.Clone();
         }
-
+       
     }
 
+
+    /* JSON ELEMENT GENERATOR CLASS */
+    public static class JsonElementGenerator
+    {
+        /* JSON ELEMENT FROM INT,DOUBLE,STRING,BOOL */
+
+
+        public static JsonElement AsJsonElement(this bool value)
+        {
+            using var doc = JsonDocument.Parse(value ? "true" : "false");
+            return doc.RootElement.Clone();
+        }
+
+        public static JsonElement AsJsonElement(this int value)
+        {
+            using var doc = JsonDocument.Parse(value.ToString(CultureInfo.InvariantCulture));
+            return doc.RootElement.Clone();
+        }
+
+        public static JsonElement AsJsonElement(this double value)
+        {
+            using var doc = JsonDocument.Parse(value.ToString(CultureInfo.InvariantCulture));
+            return doc.RootElement.Clone();
+        }
+
+        public static JsonElement AsJsonElement(this decimal value)
+        {
+            using var doc = JsonDocument.Parse(value.ToString(CultureInfo.InvariantCulture));
+            return doc.RootElement.Clone();
+        }
+
+        public static JsonElement AsJsonElement(this string? value)
+        {
+            using var doc = JsonDocument.Parse(JsonSerializer.Serialize(value));
+            return doc.RootElement.Clone();
+        }
+    }
 }
 
