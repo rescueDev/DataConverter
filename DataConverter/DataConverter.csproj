@@ -14,11 +14,6 @@
     <None Remove="GemBox.Spreadsheet" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JsonPatch.Net" Version="1.1.2" />
-    <PackageReference Include="JsonPath.Net" Version="0.2.1" />
-    <PackageReference Include="Json.More.Net" Version="1.5.0" />
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1000" />
-    <PackageReference Include="GemBox.Spreadsheet" Version="47.0.1418" />
     <PackageReference Include="EPPlus" Version="5.8.8" />
   </ItemGroup>
 </Project>
