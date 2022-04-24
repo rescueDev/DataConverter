@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.IO;
 using OfficeOpenXml;
-using Json.More;
 
 namespace DataConverter
 {
@@ -97,30 +96,36 @@ namespace DataConverter
 
         public string ConvertToJson()
         {
-
-            //generate map
-            List<Dictionary<string, Datatypes>> mapDict = GenerateMap(rowsList);
-
-            //list of dictionary [{}]
-            List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
-            for (int row = 1; row < rowsList.Count; row++)
+            try
             {
-                
-                Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
+                //generate map
+                List<Dictionary<string, Datatypes>> mapDict = GenerateMap(rowsList);
 
-                for (int col = 0; col < rowsList[row].Length; col++)
+                //list of dictionary [{}]
+                List<Dictionary<string, JsonElement>> listDict = new List<Dictionary<string, JsonElement>>();
+                for (int row = 1; row < rowsList.Count; row++)
                 {
-                    //dynamic type cell value, don't know if string or int yet
-                    JsonElement value = ConvertValue(rowsList[row][col], mapDict[col]["Type"]);
-                    dict.Add(rowsList[0][col], value);
+
+                    Dictionary<string, JsonElement> dict = new Dictionary<string, JsonElement>();
+
+                    for (int col = 0; col < rowsList[row].Length; col++)
+                    {
+                        //dynamic type cell value, don't know if string or int yet
+                        JsonElement value = ConvertValue(rowsList[row][col], mapDict[col]["Type"]);
+                        dict.Add(rowsList[0][col], value);
+                    }
+
+                    listDict.Add(dict);
                 }
 
-                listDict.Add(dict);
+                string json = JsonSerializer.Serialize(listDict);
+
+                return json;
             }
-
-            string json = JsonSerializer.Serialize(listDict);
-
-            return json;
+            catch(Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         private static JsonElement ConvertValue(string value, Datatypes type)
