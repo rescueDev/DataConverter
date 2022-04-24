@@ -8,7 +8,7 @@ namespace DataConverter
         {
 
 
-            var spreadsheet = new Spreadsheet("/Users/salvatoreborgia/Downloads/test2.xlsx", "xlsx");
+            Spreadsheet spreadsheet = new Spreadsheet("/Users/salvatoreborgia/Downloads/test2.xlsx", "xlsx");
 
             spreadsheet.ReadData();
 
